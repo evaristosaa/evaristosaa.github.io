@@ -447,6 +447,111 @@ section {
     gap: 0.5rem;
 }
 
+/* AI News */
+.ai-news {
+    background: var(--white);
+}
+
+.news-intro {
+    text-align: center;
+    color: var(--gray);
+    margin-bottom: 2rem;
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.news-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+}
+
+.spinner {
+    border: 3px solid var(--gray-light);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.news-card {
+    background: var(--bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid var(--gray-light);
+    transition: all 0.3s;
+}
+
+.news-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.news-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.news-card h3 a {
+    color: var(--dark);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.news-card h3 a:hover {
+    color: var(--primary);
+}
+
+.news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--gray);
+}
+
+.news-source-badge {
+    background: var(--primary);
+    color: var(--white);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.news-description {
+    color: var(--dark-light);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.news-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 2px solid var(--gray-light);
+}
+
+.news-source {
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
 /* Contact */
 .contact {
     background: var(--white);

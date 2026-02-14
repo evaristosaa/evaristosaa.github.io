@@ -53,4 +53,86 @@ if (footerYear) {
     footerYear.innerHTML = footerYear.innerHTML.replace('2026', new Date().getFullYear());
 }
 
+// AI News fetcher
+async function fetchAINews() {
+    const container = document.getElementById('news-container');
+    
+    try {
+        // Fetch from Hacker News
+        const topStoriesRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+        const storyIds = await topStoriesRes.json();
+        
+        const news = [];
+        const aiKeywords = ['ai ', 'gpt', 'llm', 'chatgpt', 'claude', 'gemini', 
+                           'machine learning', 'ml ', 'neural', 'openai', 
+                           'anthropic', 'deepmind', 'artificial intelligence'];
+        
+        // Fetch first 50 stories and filter AI-related
+        for (const id of storyIds.slice(0, 50)) {
+            try {
+                const res = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+                const story = await res.json();
+                
+                if (story && story.title) {
+                    const title = story.title.toLowerCase();
+                    const isAI = aiKeywords.some(keyword => title.includes(keyword));
+                    
+                    if (isAI) {
+                        news.push({
+                            title: story.title,
+                            url: story.url || `https://news.ycombinator.com/item?id=${id}`,
+                            date: new Date(story.time * 1000).toLocaleDateString('es-ES'),
+                            source: 'Hacker News',
+                            description: story.text ? story.text.replace(/<[^>]*>/g, '').slice(0, 150) + '...' : ''
+                        });
+                    }
+                    
+                    if (news.length >= 6) break;
+                }
+            } catch (err) {
+                continue;
+            }
+        }
+        
+        // Render news
+        if (news.length > 0) {
+            container.innerHTML = news.map(item => `
+                <div class="news-card">
+                    <div class="news-meta">
+                        <span class="news-source-badge">${item.source}</span>
+                        <span>${item.date}</span>
+                    </div>
+                    <h3><a href="${item.url}" target="_blank" rel="noopener">${item.title}</a></h3>
+                    ${item.description ? `<p class="news-description">${item.description}</p>` : ''}
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p style="text-align: center; color: var(--gray);">No se encontraron noticias de IA recientes.</p>';
+        }
+    } catch (error) {
+        container.innerHTML = '<p style="text-align: center; color: var(--gray);">Error al cargar noticias. Intenta de nuevo más tarde.</p>';
+        console.error('Error fetching AI news:', error);
+    }
+}
+
+// Refresh button
+const refreshBtn = document.getElementById('refresh-news');
+if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+        const container = document.getElementById('news-container');
+        container.innerHTML = `
+            <div class="news-loading">
+                <div class="spinner"></div>
+                <p>Cargando noticias...</p>
+            </div>
+        `;
+        fetchAINews();
+    });
+}
+
+// Load news on page load
+if (document.getElementById('news-container')) {
+    fetchAINews();
+}
+
 console.log('🤖 Portfolio by Evaristo Saá | Built with OpenClaw');
