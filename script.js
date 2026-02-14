@@ -12,39 +12,91 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Navbar background on scroll
+// Navbar scroll effect
 const navbar = document.querySelector('.navbar');
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+    if (window.scrollY > 100) {
+        navbar.classList.add('scrolled');
     } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-        navbar.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+        navbar.classList.remove('scrolled');
     }
 });
 
-// Animate on scroll
+// Intersection Observer for fade-in animations
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    rootMargin: '0px 0px -100px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
         }
     });
 }, observerOptions);
 
-// Observe all sections except hero
-document.querySelectorAll('section:not(.hero)').forEach(section => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(20px)';
-    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+// Observe all sections
+document.querySelectorAll('section').forEach(section => {
+    section.classList.add('fade-in');
     observer.observe(section);
+});
+
+// Observe cards individually for staggered effect
+document.querySelectorAll('.project-card, .skill-category, .stat, .timeline-item, .contact-card').forEach((el, index) => {
+    el.classList.add('fade-in');
+    el.style.transitionDelay = `${index * 0.1}s`;
+    observer.observe(el);
+});
+
+// Parallax effect for hero gradient
+window.addEventListener('scroll', () => {
+    const heroGradient = document.querySelector('.hero::before');
+    if (heroGradient) {
+        const scrolled = window.scrollY;
+        heroGradient.style.transform = `rotate(${scrolled * 0.1}deg) scale(1.1)`;
+    }
+});
+
+// Cursor trail effect (optional, modern touch)
+const createCursorTrail = () => {
+    const trail = document.createElement('div');
+    trail.className = 'cursor-trail';
+    document.body.appendChild(trail);
+
+    let mouseX = 0, mouseY = 0;
+    let trailX = 0, trailY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    const animateTrail = () => {
+        trailX += (mouseX - trailX) * 0.1;
+        trailY += (mouseY - trailY) * 0.1;
+        
+        trail.style.left = trailX + 'px';
+        trail.style.top = trailY + 'px';
+        
+        requestAnimationFrame(animateTrail);
+    };
+
+    animateTrail();
+};
+
+// Only create cursor trail on desktop
+if (window.innerWidth > 768) {
+    // Disabled by default, uncomment to enable:
+    // createCursorTrail();
+}
+
+// Add glow effect to hovered links
+document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', function() {
+        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    });
 });
 
 // Dynamic year in footer
@@ -53,4 +105,88 @@ if (footerYear) {
     footerYear.innerHTML = footerYear.innerHTML.replace('2026', new Date().getFullYear());
 }
 
-console.log('🤖 Portfolio by Evaristo Saá | Built with OpenClaw');
+// Typing effect for hero subtitle (optional)
+const subtitleElement = document.querySelector('.hero-subtitle');
+if (subtitleElement && false) { // Set to true to enable
+    const originalText = subtitleElement.textContent;
+    subtitleElement.textContent = '';
+    let charIndex = 0;
+
+    const typeChar = () => {
+        if (charIndex < originalText.length) {
+            subtitleElement.textContent += originalText.charAt(charIndex);
+            charIndex++;
+            setTimeout(typeChar, 50);
+        }
+    };
+
+    setTimeout(typeChar, 500);
+}
+
+// Stats counter animation
+const animateStats = () => {
+    const stats = document.querySelectorAll('.stat-number');
+    
+    stats.forEach(stat => {
+        const target = parseInt(stat.textContent);
+        const increment = target / 50;
+        let current = 0;
+        
+        const updateCount = () => {
+            if (current < target) {
+                current += increment;
+                stat.textContent = Math.floor(current) + (stat.textContent.includes('+') ? '+' : '');
+                requestAnimationFrame(updateCount);
+            } else {
+                stat.textContent = target + (stat.textContent.includes('+') ? '+' : '');
+            }
+        };
+        
+        const statObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    updateCount();
+                    statObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        statObserver.observe(stat.closest('.stat'));
+    });
+};
+
+animateStats();
+
+// Add floating animation to hero elements
+const addFloatingAnimation = () => {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        let position = 0;
+        const float = () => {
+            position += 0.01;
+            heroContent.style.transform = `translateY(${Math.sin(position) * 10}px)`;
+            requestAnimationFrame(float);
+        };
+        float();
+    }
+};
+
+addFloatingAnimation();
+
+// Console easter egg
+console.log('%c🤖 Portfolio by Evaristo Saá', 'font-size: 20px; font-weight: bold; color: #6366f1;');
+console.log('%cBuilt with OpenClaw + Modern Web Technologies', 'font-size: 14px; color: #8b5cf6;');
+console.log('%c💼 Looking for opportunities? Let\'s connect!', 'font-size: 14px; color: #10b981;');
+
+// Performance: Lazy load images (if any added later)
+if ('loading' in HTMLImageElement.prototype) {
+    const images = document.querySelectorAll('img[data-src]');
+    images.forEach(img => {
+        img.src = img.dataset.src;
+    });
+} else {
+    // Fallback for older browsers
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
+    document.body.appendChild(script);
+}
