@@ -219,6 +219,21 @@ body::before {
     margin-right: auto;
 }
 
+.hero-cta-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: var(--accent-primary);
+    font-weight: 500;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.75rem 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+}
+
 .hero-cta {
     display: flex;
     gap: 1.25rem;
