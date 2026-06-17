@@ -2890,7 +2890,11 @@ async function apiWithConfig(config, payload) {
         return await formMessageAppsScript(config.apiUrl, request);
       }
     }
-    return await formMessageAppsScript(config.apiUrl, request);
+    try {
+      return await formMessageAppsScript(config.apiUrl, request, request.action === 'save' ? 6000 : 20000);
+    } catch (error) {
+      return await recoverConfirmedWrite(config.apiUrl, request, error);
+    }
   }
   try {
     return await postAppsScript(config.apiUrl, request);
@@ -2898,6 +2902,27 @@ async function apiWithConfig(config, payload) {
     if (!isNetworkFetchError(error)) throw error;
     return await jsonpAppsScript(config.apiUrl, request);
   }
+}
+
+async function recoverConfirmedWrite(apiUrl, request, originalError) {
+  if (request.action !== 'save' || !request.item || !request.item.id) throw originalError;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (attempt > 0) await sleep(750);
+    const response = await jsonpAppsScript(apiUrl, {
+      action: 'get',
+      secret: request.secret,
+      id: request.item.id,
+    });
+    const item = response.item;
+    if (item && String(item.updatedAt || '') === String(request.item.updatedAt || '')) {
+      return response;
+    }
+  }
+  throw originalError;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
 }
 
 async function proxyAppsScript(apiUrl, request) {
@@ -2972,7 +2997,7 @@ function jsonpAppsScript(apiUrl, request) {
   });
 }
 
-function formMessageAppsScript(apiUrl, request) {
+function formMessageAppsScript(apiUrl, request, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
     const requestId = `ce3xForm${Date.now()}${Math.random().toString(36).slice(2)}`;
     const iframe = document.createElement('iframe');
@@ -2987,7 +3012,7 @@ function formMessageAppsScript(apiUrl, request) {
     const timeout = window.setTimeout(() => {
       cleanup();
       reject(new Error('Apps Script no confirmó el guardado por formulario'));
-    }, 20000);
+    }, timeoutMs);
     const onMessage = event => {
       const data = event.data || {};
       if (data.source !== 'ce3x-apps-script' || data.requestId !== requestId) return;
